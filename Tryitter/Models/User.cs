@@ -1,7 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+using System.Net.Mail;
 
 namespace Tryitter.Models;
-
+[Index(nameof(Email), IsUnique = true)]
 public class User
 {
     [Key] //Optional

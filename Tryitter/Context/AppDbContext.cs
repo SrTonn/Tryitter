@@ -8,4 +8,9 @@ public class AppDbContext : DbContext
 	public DbSet<Post>? Posts { get; set; }
 	public DbSet<User>? Users { get; set; }
 	public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+
+    public User? GetUser(int id)
+    {
+        return Users!.FirstOrDefault(user => user.UserId == id);
+    }
 }

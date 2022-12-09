@@ -21,7 +21,7 @@ namespace Tryitter.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<User>> GetAll()
         {
-            var users = _context.Users;
+            var users = _context.Users!.AsNoTracking();
             if(users is null)
                 return NotFound("Usuários não encontrados...");
 

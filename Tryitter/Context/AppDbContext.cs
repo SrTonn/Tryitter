@@ -11,6 +11,6 @@ public class AppDbContext : DbContext
 
     public User? GetUser(int id)
     {
-        return Users!.FirstOrDefault(user => user.UserId == id);
+        return Users!.AsNoTracking().FirstOrDefault(user => user.UserId == id);
     }
 }

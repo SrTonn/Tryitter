@@ -20,7 +20,7 @@ namespace Tryitter.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<Post>> GetAll()
         {
-            var posts = _context.Posts;
+            var posts = _context.Posts!.AsNoTracking();
             if (posts is null)
                 return NotFound("Posts não encontrados...");
 

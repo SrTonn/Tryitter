@@ -1,9 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
-using System.Net.Mail;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Tryitter.Models;
-[Index(nameof(Email), IsUnique = true)]
+//[Index(nameof(Email), IsUnique = true)]
 public class User
 {
     [Key] //Optional
@@ -17,8 +15,8 @@ public class User
     [Required]
     [MinLength(6), MaxLength(20)]
     public string? Password { get; set; }
+    public bool Admin { get; set; }
     public IEnumerable<Post> Posts { get; set; }
-
     public User()
     {
         Posts = new List<Post>();

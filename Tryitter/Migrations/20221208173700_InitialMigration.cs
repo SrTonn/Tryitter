@@ -24,8 +24,9 @@ namespace Tryitter.Migrations
                     Email = table.Column<string>(type: "varchar(30)", maxLength: 30, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Password = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4")
-                },
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Admin = table.Column<bool>(type: "tinyint(1)", nullable: false, defaultValue: false)
+        },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Users", x => x.UserId);

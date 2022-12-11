@@ -8,7 +8,7 @@ namespace Tryitter.Migrations
     {
         protected override void Up(MigrationBuilder mb)
         {
-            mb.Sql("Insert into Users(Name, Email, Password) Values('Urbe', 'Urbe88@email.com', 'UrbeRock')");
+            mb.Sql("Insert into Users(Name, Email, Password, Admin) Values('Urbe', 'Urbe88@email.com', 'UrbeRock', true)");
         }
 
         protected override void Down(MigrationBuilder mb)

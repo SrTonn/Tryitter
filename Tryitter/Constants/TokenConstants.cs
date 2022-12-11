@@ -2,6 +2,6 @@
 {
     public static class TokenConstants
     {
-        public const string Secret = "aloha321@Secret";
+        public const string Secret = "<--aloha321@123Secret-->";
     }
 }

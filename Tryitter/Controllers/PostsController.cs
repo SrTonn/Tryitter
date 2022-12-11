@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Tryitter.Context;
@@ -9,10 +10,10 @@ namespace Tryitter.Controllers
 {
     [Route("[controller]")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class PostsController : ControllerBase
     {
         private readonly AppDbContext _context;
-
         public PostsController(AppDbContext context)
         {
             _context = context;
@@ -30,8 +31,8 @@ namespace Tryitter.Controllers
         [HttpGet("{id:int}", Name = "GetPost")]
         public ActionResult<IEnumerable<Post>> GetById(int id)
         {
-            var post = _context.Posts!.FirstOrDefault(post => post.PostId == id);
-            if(post is null)
+            var post = _context.Posts!.AsNoTracking().FirstOrDefault(post => post.PostId == id);
+            if (post is null)
                 return NotFound("Post não encontrado.");
 
             return Ok(post);
@@ -44,7 +45,7 @@ namespace Tryitter.Controllers
                 return BadRequest();
 
             if (!UserValidation.IsValid(_context.GetUser(post.UserId)))
-                return NotFound("Usuário não encontrado.");
+                return NotFound("Usuário não encontrado ao tentar relacionar o post.");
 
             _context.Posts!.Add(post);
             _context.SaveChanges();
@@ -71,12 +72,12 @@ namespace Tryitter.Controllers
             var post = _context.Posts!.FirstOrDefault(post => post.PostId == id);
 
             if (post is null)
-                return NotFound("Usuário não localizado.");
+                return NotFound("Post não localizado.");
 
             _context.Posts!.Remove(post);
             _context.SaveChanges();
 
-            return Ok(post);
+            return Ok();
         }
     }
 }

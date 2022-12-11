@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Tryitter.Context;
+using Tryitter.DTOs;
 using Tryitter.Models;
 using Tryitter.Validations;
 
@@ -9,26 +11,33 @@ namespace Tryitter.Controllers
 {
     [Route("[controller]")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class UsersController : ControllerBase
     {
-        private readonly AppDbContext _context; 
+        private readonly AppDbContext _context;
 
-        public UsersController(AppDbContext context) 
+        public UsersController(AppDbContext context)
         {
             _context = context;
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<User>> GetAll()
+        public ActionResult<IEnumerable<UserDTO>> GetAll()
         {
             var users = _context.Users!.AsNoTracking();
-            if(users is null)
+            if (users is null)
                 return NotFound("Usuários não encontrados...");
 
-            return Ok(users);
+            return Ok(users.Select(u => new
+            {
+                Id = u.UserId,
+                Name = u.Name,
+                Email = u.Email,
+                Admin = u.Admin
+            }));
         }
 
-        [HttpGet("{id:int}", Name="GetUser")]
+        [HttpGet("{id:int}", Name = "GetUser")]
         public ActionResult<User> Get(int id)
         {
             var user = _context.GetUser(id);
@@ -51,11 +60,13 @@ namespace Tryitter.Controllers
                 new { id = user.UserId }, user);
         }
 
-        [HttpPut]
+        [HttpPut("{id:int}")]
         public ActionResult Put(int id, User user)
         {
-            if (id != user.UserId)
-                return BadRequest();
+            if (!UserValidation.IsValid(_context.GetUser(id)))
+                return BadRequest("Usuário não encontrado.");
+
+            user.UserId = id;
 
             _context.Entry(user).State = EntityState.Modified;
             _context.SaveChanges();

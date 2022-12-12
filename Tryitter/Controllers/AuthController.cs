@@ -25,6 +25,18 @@ namespace Tryitter.Controllers
             if (emailExist != null)
                 return BadRequest("Email já esta cadastrado");
 
+            if (userDTO.Admin)
+            {
+                var hasToken = Request.Headers.TryGetValue("Authorization", out var bearerToken);
+                if(!hasToken)
+                    return Unauthorized("Token não encontrado");
+
+                var userInfo = _context.GetUser(bearerToken);
+
+                if (!userInfo!.Admin)
+                    return Unauthorized("Acesso negado");
+            }
+
             User user = new()
             {
                 Name = userDTO.Name,

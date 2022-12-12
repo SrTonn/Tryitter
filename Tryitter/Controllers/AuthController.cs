@@ -4,6 +4,7 @@ using Tryitter.Context;
 using Tryitter.DTOs;
 using Tryitter.Models;
 using Tryitter.Services;
+using Tryitter.Validations;
 
 namespace Tryitter.Controllers
 {
@@ -21,9 +22,12 @@ namespace Tryitter.Controllers
         [HttpPost("/register")]
         public ActionResult Post(UserDTO userDTO)
         {
+            if(!UserValidation.IsValidEmail(userDTO.Email!))
+                return BadRequest("Formato inválido");
+
             var emailExist = _context.Users!.FirstOrDefault(user => user.Email == userDTO.Email);
             if (emailExist != null)
-                return BadRequest("Email já esta cadastrado");
+                return BadRequest("Email já cadastrado");
 
             if (userDTO.Admin)
             {

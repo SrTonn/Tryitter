@@ -1,19 +1,20 @@
-using FluentAssertions;
+using Tryitter.Models;
 using Tryitter.Services;
-using Tryitter.DTOs;
 
 namespace Tryitter.Test;
 
 public class TestTokenGenerator
 {
-    [Theory(DisplayName = "Teste para TokenGenerator em que token não é nulo e possui 3 partes")]
-    [InlineData("Mayara@mail.com", "may123450")]
-    public void TestTokenGeneratorSuccess(string email, string password)
+    /// <summary>
+    /// "Teste para TokenGenerator em que token não é nulo e possui 3 partes"
+    /// </summary>
+    [Fact]
+    public void TestTokenGeneratorSuccess()
     {
-        var user = new AuthDTO
+        var user = new User
         {
-            Email = email,
-            Password = password,
+            Email = "Mayara@mail.com",
+            Password = "may123450",
         };
         var instance = new TokenGenerator();
         var token = instance.Generate(user);

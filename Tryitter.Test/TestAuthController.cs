@@ -52,7 +52,10 @@ public class TestAuthController : IClassFixture<TryitterTestContext<Program>>
         using HttpResponseMessage response = await client
             .PostAsJsonAsync("register", userDTO);
 
+        var responseBody = await response.Content.ReadAsStringAsync();
+
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        responseBody.Should().Be("Email já cadastrado");
     }
 
     [Fact(DisplayName = "Teste registro de admin")]
@@ -106,6 +109,32 @@ public class TestAuthController : IClassFixture<TryitterTestContext<Program>>
         using HttpResponseMessage response = await client
             .PostAsJsonAsync("register", newUser);
 
+        var responseBody = await response.Content.ReadAsStringAsync();
+
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        responseBody.Should().Be("Acesso negado");
+    }
+
+    [Fact(DisplayName = "Teste login")]
+    public async Task TestLoginSuccess()
+    {
+        var client = _factory.CreateClient();
+        var user = new User
+        {
+            Name = "Test",
+            Email = "aloha@321.com",
+            Password = "password",
+            Admin = false,
+        };
+
+        await client.PostAsJsonAsync("register", user);
+
+        using HttpResponseMessage response = await client
+            .PostAsJsonAsync("login", user);
+
+        var responseBody = await response.Content.ReadAsStringAsync();
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        responseBody.Split(".").Should().HaveCount(3);
     }
 }

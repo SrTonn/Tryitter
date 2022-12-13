@@ -35,9 +35,7 @@ namespace Tryitter.Controllers
                 if(!hasToken)
                     return Unauthorized("Token não encontrado");
 
-                var userInfo = _context.GetUser(bearerToken);
-
-                if (!userInfo!.Admin)
+                if (!UserValidation.IsAdminUser(bearerToken))
                     return Unauthorized("Acesso negado");
             }
 
@@ -66,7 +64,7 @@ namespace Tryitter.Controllers
                 return Unauthorized("Usuário inválido.");
 
             var jwtAuthenticationManager = new TokenGenerator();
-            var authResult = jwtAuthenticationManager.Generate(authRequest);
+            var authResult = jwtAuthenticationManager.Generate(existingUser);
 
             return Ok(authResult);
         }

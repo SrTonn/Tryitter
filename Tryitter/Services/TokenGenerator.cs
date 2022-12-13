@@ -4,6 +4,7 @@ using System.Security.Claims;
 using System.Text;
 using Tryitter.Constants;
 using Tryitter.DTOs;
+using Tryitter.Models;
 
 namespace Tryitter.Services
 {
@@ -13,7 +14,7 @@ namespace Tryitter.Services
         /// This function is to Generate Token 
         /// </summary>
         /// <returns>A string, the token JWT</returns>
-        public string Generate(AuthDTO user)
+        public string Generate(User user)
         {
             var tokenDescriptor = new SecurityTokenDescriptor()
             {
@@ -31,10 +32,11 @@ namespace Tryitter.Services
             return tokenHandler.WriteToken(token);
         }
 
-        private ClaimsIdentity AddClaims(AuthDTO user)
+        private ClaimsIdentity AddClaims(User user)
         {
             var claims = new ClaimsIdentity();
             claims.AddClaim(new Claim("Email", user.Email!));
+            claims.AddClaim(new Claim("Admin", user.Admin.ToString()));
 
             return claims;
         }

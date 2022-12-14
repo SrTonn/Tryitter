@@ -18,7 +18,9 @@ namespace Tryitter.Controllers
         {
             _context = context;
         }
+
         [HttpGet]
+        [AllowAnonymous]
         public ActionResult<IEnumerable<Post>> GetAll()
         {
             var posts = _context.Posts!.AsNoTracking();
@@ -28,10 +30,38 @@ namespace Tryitter.Controllers
             return Ok(posts);
         }
 
+
         [HttpGet("{id:int}", Name = "GetPost")]
+        [AllowAnonymous]
         public ActionResult<IEnumerable<Post>> GetById(int id)
         {
             var post = _context.Posts!.AsNoTracking().FirstOrDefault(post => post.PostId == id);
+            if (post is null)
+                return NotFound("Post não encontrado.");
+
+            return Ok(post);
+        }       
+        
+        [HttpGet("last",Name = "GetLastPost")]
+        [AllowAnonymous]
+        public ActionResult<Post> GetLastPost()
+        {
+            var post = _context.Posts!.OrderBy(x => x.PostId).LastOrDefault();
+            if (post is null)
+                return NotFound("Post não encontrado.");
+
+            return Ok(post);
+        }
+
+        [HttpGet("last/{id:int}", Name = "GetLastPostByUserId")]
+        [AllowAnonymous]
+        public ActionResult<Post> GetLastPostByUserId(int id)
+        {
+            var post = _context.Posts!
+                .Where(x => x.UserId == id)
+                .OrderBy(x => x.PostId)
+                .LastOrDefault();
+
             if (post is null)
                 return NotFound("Post não encontrado.");
 
@@ -44,8 +74,14 @@ namespace Tryitter.Controllers
             if (post is null)
                 return BadRequest();
 
-            if (!UserValidation.IsValid(_context.GetUser(post.UserId)))
+            Request.Headers.TryGetValue("Authorization", out var bearerToken);
+
+            var user = _context.GetUser(bearerToken);
+
+            if (!UserValidation.IsValidUser(user))
                 return NotFound("Usuário não encontrado ao tentar relacionar o post.");
+
+            post.UserId = user!.UserId;
 
             _context.Posts!.Add(post);
             _context.SaveChanges();

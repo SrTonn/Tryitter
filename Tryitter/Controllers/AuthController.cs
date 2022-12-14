@@ -50,8 +50,12 @@ namespace Tryitter.Controllers
             _context.Users!.Add(user);
             _context.SaveChanges();
 
-            return new CreatedAtRouteResult("GetUser",
+            var result = new CreatedAtRouteResult("GetUser",
                 new { id = user.UserId }, userDTO);
+
+            userDTO.id = user.UserId;
+
+            return result;
         }
 
         [HttpPost]

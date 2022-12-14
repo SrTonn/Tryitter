@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using Tryitter.Context;
 using Tryitter.DTOs;
 using Tryitter.Models;
@@ -22,6 +23,7 @@ namespace Tryitter.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public ActionResult<IEnumerable<UserDTO>> GetAll()
         {
             var users = _context.Users!.AsNoTracking();
@@ -38,35 +40,28 @@ namespace Tryitter.Controllers
         }
 
         [HttpGet("{id:int}", Name = "GetUser")]
-        public ActionResult<User> Get(int id)
+        public ActionResult<User> GetById(int id)
         {
             var user = _context.GetUser(id);
-            if (UserValidation.IsValid(user))
+            if (UserValidation.IsValidUser(user))
                 return Ok(user);
 
             return NotFound("Usuário não encontrado.");
         }
 
-        [HttpPost]
-        public ActionResult Post(User user)
+        [HttpPut("{id:int}", Name = "Put Admin")]
+        [Authorize(Policy = "TryitterAdministrators")]
+        public ActionResult UpdateByAdmin(int id, UserDTO input)
         {
-            if (user is null)
-                return BadRequest();
-
-            _context.Users!.Add(user);
-            _context.SaveChanges();
-
-            return new CreatedAtRouteResult("GetUser",
-                new { id = user.UserId }, user);
-        }
-
-        [HttpPut("{id:int}")]
-        public ActionResult Put(int id, User user)
-        {
-            if (!UserValidation.IsValid(_context.GetUser(id)))
+            var user = _context.GetUser(id);
+            if (!UserValidation.IsValidUser(user))
                 return BadRequest("Usuário não encontrado.");
 
             user.UserId = id;
+            user.Name = input.Name;
+            user.Email = input.Email;
+            user.Password = input.Password;
+            user.Admin = input.Admin;
 
             _context.Entry(user).State = EntityState.Modified;
             _context.SaveChanges();
@@ -74,10 +69,43 @@ namespace Tryitter.Controllers
             return Ok(user);
         }
 
-        [HttpDelete("{id:int}")]
-        public ActionResult Delete(int id)
+        [HttpPut("me")]
+        public ActionResult UpdateByUser(OwnUser ownUser)
+        {
+            var claims = HttpContext.User.Identity as ClaimsIdentity;
+            var email = claims.Claims.FirstOrDefault(c => c.Type == "Email")!.Value;
+            var user = _context.GetUser(email);
+
+            user.Email = ownUser.Email;
+            user.Name = ownUser.Name;
+            user.Password = ownUser.Password;
+
+            _context.Entry(user).State = EntityState.Modified;
+            _context.SaveChanges();
+
+            return Ok();
+        }
+
+        [HttpDelete("{id:int}", Name = "Delete Admin")]
+        [Authorize(Policy = "TryitterAdministrators")]
+        public ActionResult DeleteByAdmin(int id)
         {
             var user = _context.Users!.FirstOrDefault(user => user.UserId == id);
+            if (user is null)
+                return NotFound("Usuário não localizado.");
+
+            _context.Users!.Remove(user);
+            _context.SaveChanges();
+
+            return NoContent();
+        }
+
+        [HttpDelete("me")]
+        public ActionResult DeleteByUser()
+        {
+            var claims = HttpContext.User.Identity as ClaimsIdentity;
+            var email = claims.Claims.FirstOrDefault(c => c.Type == "Email")!.Value;
+            var user = _context.GetUser(email);
 
             if (user is null)
                 return NotFound("Usuário não localizado.");
@@ -85,7 +113,7 @@ namespace Tryitter.Controllers
             _context.Users!.Remove(user);
             _context.SaveChanges();
 
-            return Ok(user);
+            return NoContent();
         }
     }
 }

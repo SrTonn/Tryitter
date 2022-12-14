@@ -6,6 +6,8 @@ namespace Tryitter.Models;
 public class Post
 {
     [Key]
+    [JsonIgnore]
+
     public int PostId { get; set; }
     [Required]
     [MaxLength(50)]
@@ -15,8 +17,11 @@ public class Post
     [Required]
     [StringLength(300, MinimumLength = 10)]
     public string? ImageUrl { get; set; }
+    [JsonIgnore]
 
     public DateTime DataPost { get; set; }
+    [JsonIgnore]
+
     public int UserId { get; set; }
 
     [JsonIgnore]

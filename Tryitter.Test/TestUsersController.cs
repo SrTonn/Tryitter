@@ -11,6 +11,11 @@ namespace Tryitter.Test
     public class TestUsersController : IClassFixture<TryitterTestContext<Program>>
     {
         private readonly WebApplicationFactory<Program> _factory;
+        public class UserId
+        {
+            public int id;
+        }
+
         public TestUsersController(TryitterTestContext<Program> factory)
         {
             _factory = factory;
@@ -22,19 +27,35 @@ namespace Tryitter.Test
             {
                 new UserDTO ()
                 {
-                    Name = "Test1",
-                    Email = "aloha1@mail.com",
-                    Password = "password1",
+                    Name = "Romeo",
+                    Email = "romeo@mail.com",
+                    Password = "Romeo1",
                     Admin = false,
                 },
                 new UserDTO ()
                 {
-                    Name = "Test11",
-                    Email = "aloha11@mail.com",
-                    Password = "password11",
+                    Name = "Julieta",
+                    Email = "julieta@mail.com",
+                    Password = "Julieta2",
                     Admin = false,
                 }
-            },           
+            },
+            {
+                new UserDTO ()
+                {
+                    Name = "Sr Smith",
+                    Email = "sr.smith@mail.com",
+                    Password = "smiths",
+                    Admin = false,
+                },
+                new UserDTO ()
+                {
+                    Name = "Sra Smith",
+                    Email = "sra.smith@mail.com",
+                    Password = "smiths",
+                    Admin = false,
+                }
+            },
         };
 
         [Theory]
@@ -61,20 +82,14 @@ namespace Tryitter.Test
             var client = _factory.CreateClient();
 
             await client.PostAsJsonAsync("register", user1);
+            await client.PostAsJsonAsync("register", user2);
 
             var instance = new TokenGenerator();
             var token = instance.Generate(user1.Email!, user1.Admin);
-
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            using HttpResponseMessage response = await client.GetAsync("users/1");
+            using HttpResponseMessage response = await client.GetAsync($"users/1");
             response.StatusCode.Should().Be(HttpStatusCode.OK);
-
-            var responseBody = await response.Content.ReadFromJsonAsync<User>();
-
-            responseBody.Email.Should().Be(user1.Email);
-            responseBody.Name.Should().Be(user1.Name);
-            responseBody.Password.Should().Be(user1.Password);
         }
 
         [Theory]
@@ -96,7 +111,7 @@ namespace Tryitter.Test
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             responseBody.Name.Should().Be(user2.Name);
         }
-        
+
         [Theory]
         [MemberData(nameof(TestGetAllUsersData))]
         public async Task TestUpdateUsersByUser(UserDTO user1, UserDTO user2)
@@ -121,17 +136,21 @@ namespace Tryitter.Test
         {
             var client = _factory.CreateClient();
 
+            user1.Email = Faker.Internet.Email("Antonieto");
+            user2.Email = Faker.Internet.Email("jurema");
+
             await client.PostAsJsonAsync("register", user1);
-            await client.PostAsJsonAsync("register", user2);
+            using HttpResponseMessage responsePost = await client.PostAsJsonAsync("register", user2);
+            var resultPost = await responsePost.Content.ReadFromJsonAsync<UserDTO>();
 
             var instance = new TokenGenerator();
-            var token = instance.Generate(user1.Email!, true);
+            var token = instance.Generate("aloha@gmail.com", true);
 
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            using HttpResponseMessage response = await client.DeleteAsync("users/2");
+            using HttpResponseMessage response = await client.DeleteAsync($"users/{resultPost.id}");
 
-            var getUserResponse = await client.GetAsync("users/2");
+            var getUserResponse = await client.GetAsync($"users/{resultPost.id}");
 
             response.StatusCode.Should().Be(HttpStatusCode.NoContent);
             getUserResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -139,7 +158,7 @@ namespace Tryitter.Test
 
         [Theory]
         [MemberData(nameof(TestGetAllUsersData))]
-        public async Task TestDeleteUsersByUser(UserDTO user1, UserDTO user2)
+        public async Task Test6DeleteUsersByUser(UserDTO user1, UserDTO user2)
         {
             var client = _factory.CreateClient();
 

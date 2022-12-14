@@ -3,7 +3,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Tryitter.Constants;
-using Tryitter.DTOs;
 using Tryitter.Models;
 
 namespace Tryitter.Services
@@ -14,11 +13,11 @@ namespace Tryitter.Services
         /// This function is to Generate Token 
         /// </summary>
         /// <returns>A string, the token JWT</returns>
-        public string Generate(User user)
+        public string Generate(string email, bool admin)
         {
             var tokenDescriptor = new SecurityTokenDescriptor()
             {
-                Subject = AddClaims(user),
+                Subject = AddClaims(email, admin),
                 SigningCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(Encoding.ASCII.GetBytes(TokenConstants.Secret)),
                     SecurityAlgorithms.HmacSha256Signature
@@ -32,11 +31,11 @@ namespace Tryitter.Services
             return tokenHandler.WriteToken(token);
         }
 
-        private ClaimsIdentity AddClaims(User user)
+        private ClaimsIdentity AddClaims(string email, bool admin)
         {
             var claims = new ClaimsIdentity();
-            claims.AddClaim(new Claim("Email", user.Email!));
-            claims.AddClaim(new Claim("Admin", user.Admin.ToString()));
+            claims.AddClaim(new Claim("Email", email));
+            claims.AddClaim(new Claim("Admin", admin.ToString()));
 
             return claims;
         }

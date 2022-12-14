@@ -71,7 +71,7 @@ public class TestAuthController : IClassFixture<TryitterTestContext<Program>>
         };
 
         var instance = new TokenGenerator();
-        var token = instance.Generate(user);
+        var token = instance.Generate(user.Email, user.Admin);
 
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
@@ -102,7 +102,7 @@ public class TestAuthController : IClassFixture<TryitterTestContext<Program>>
         };
 
         var instance = new TokenGenerator();
-        var token = instance.Generate(userNotAdmin);
+        var token = instance.Generate(userNotAdmin.Email, userNotAdmin.Admin);
 
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 

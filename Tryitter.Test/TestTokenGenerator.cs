@@ -17,7 +17,7 @@ public class TestTokenGenerator
             Password = "may123450",
         };
         var instance = new TokenGenerator();
-        var token = instance.Generate(user);
+        var token = instance.Generate(user.Email, user.Admin);
 
         token.Should().NotBeNullOrEmpty();
         token.Split(".").Should().HaveCount(3);

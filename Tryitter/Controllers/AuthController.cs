@@ -64,7 +64,7 @@ namespace Tryitter.Controllers
                 return Unauthorized("Usuário inválido.");
 
             var jwtAuthenticationManager = new TokenGenerator();
-            var authResult = jwtAuthenticationManager.Generate(existingUser);
+            var authResult = jwtAuthenticationManager.Generate(existingUser.Email, existingUser.Admin);
 
             return Ok(authResult);
         }

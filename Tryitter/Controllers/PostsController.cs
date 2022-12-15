@@ -30,7 +30,6 @@ namespace Tryitter.Controllers
             return Ok(posts);
         }
 
-
         [HttpGet("{id:int}", Name = "GetPost")]
         [AllowAnonymous]
         public ActionResult<IEnumerable<Post>> GetById(int id)
@@ -79,7 +78,7 @@ namespace Tryitter.Controllers
             var user = _context.GetUser(bearerToken);
 
             if (!UserValidation.IsValidUser(user))
-                return NotFound("Usuário não encontrado ao tentar relacionar o post.");
+                return NotFound("Usuário não encontrado ao tentar relacionar o newPost.");
 
             post.UserId = user!.UserId;
 
@@ -90,16 +89,28 @@ namespace Tryitter.Controllers
                 new { id = post.PostId }, post);
         }
 
-        [HttpPut]
-        public ActionResult Put(int id, Post post)
+        [HttpPut("{id:int}")]
+        public ActionResult Put(int id, Post newPost)
         {
+            Request.Headers.TryGetValue("Authorization", out var bearerToken);
+
+            var user = _context.GetUser(bearerToken)!;
+            var post = _context.Posts!.FirstOrDefault(p => p.PostId == id)!;
+
             if (id != post.PostId)
-                return BadRequest();
+                return BadRequest("Post não encontrado");
+
+            if (post.UserId != user.UserId)
+                return BadRequest("Não autorizado");
+
+            post.Title = newPost.Title;
+            post.Description = newPost.Description;
+            post.ImageUrl = newPost.ImageUrl;
 
             _context.Entry(post).State = EntityState.Modified;
             _context.SaveChanges();
 
-            return Ok(post);
+            return Ok(newPost);
         }
 
         [HttpDelete("{id:int}")]

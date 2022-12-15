@@ -40,11 +40,16 @@ namespace Tryitter.Controllers
         }
 
         [HttpGet("{id:int}", Name = "GetUser")]
-        public ActionResult<User> GetById(int id)
+        public ActionResult<UserOutput> GetById(int id)
         {
             var user = _context.GetUser(id);
             if (UserValidation.IsValidUser(user))
-                return Ok(user);
+                return Ok(new UserOutput {
+                    id = user.UserId,
+                    Name = user.Name,
+                    Email = user.Email,
+                    Admin = user.Admin
+                });
 
             return NotFound("Usuário não encontrado.");
         }
